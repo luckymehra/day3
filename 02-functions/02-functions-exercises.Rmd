@@ -1,0 +1,147 @@
+---
+title: "Writing functions in R"
+output: html_document
+---
+
+## Your Turn 0
+
+In the setup chunk below, load the `tidyverse` packages.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+When doing your data analysis, you may find yourself copying and pasting your code to replicate your analysis on a new version of the dataset or on a new variable. In those cases, the ideal way to proceed is to covert your code into a function, then reuse that function to conduct the analsis of a different dataset. This will save you a lot of copying and pasting, and help troubleshoot the problems when they arise.
+
+## Your Turn 1
+
+- The code chunk below contains the function `fahrenheit_to_celsius`. Modify this code to create a function called `celsius_to_fahrenheit` that will convert the temperature from celius to fahrenheit. The formula to convert the temperatre from celsius to fahrenheit is `temp_F = (temp_C * 9/5) + 32`.
+
+- Using your newly created `celsius_to_fahrenheit` function, convert 0 C to fahrenheit. Your result should equal to 32.
+
+```{r}
+# a function to convert temperature from fahrenheit to celsius
+fahrenheit_to_celsius <- function(temp_F) {
+  temp_C <- (temp_F - 32) * 5 / 9
+  return(temp_C)
+}
+
+```
+
+
+## Your Turn 2
+
+Load the package **readxl**, and use the function `read_excel()` to import `PLPTH850dataset_jamesLin.xlsx` into R, and name it `soil`. This is a dataset shared by one of your class mate, James. We will use this dataset to demonstrate writing and using functions.
+
+```{r}
+library(readxl)
+soil <- read_excel("PLPTH850dataset_jamesLin.xlsx")
+```
+
+Confirm that `soil` dataset has 208 observations and 39 variables. You can look into Environment tab on the top right or use the function `str()` or `glimpse()` on the dataset `soil`.
+
+## Your Turn 3
+
+Some of the variable names in `soil` contain special characters such `%, +, -,(, )`. Lets use a package called **janitor** to clean variable (column) names. In the code chunk below:
+
+- Load the package **janitor**
+
+- Use the funcion `clean_names()` to clean column names of `soil` datset
+
+```{r}
+library(janitor)
+
+soil <- soil %>% 
+  clean_names()
+```
+
+## Your Turn 4
+
+**Write a simple function**
+
+Here is a simple syntax for creating a function:
+
+```{r}
+function_name <- function(argument1, argument2, ...){
+ # function code goes here
+ # here, you will write what you would like your function to do
+}
+```
+
+To use the function, you will run `function_name(argument1, argument2)`. 
+
+Lets build a simple function, that takes in a variable name from `soil` and computes its mean. Name this function `calculate_mean`, and it will have only one argument. **Hint**: you can modify the function written below to calculate the sum of a given vairable in `soil` dataset.
+
+```{r}
+calculate_sum <- function(variable){
+  sum(soil[[variable]], na.rm = TRUE)
+}
+
+calculate_sum("ca")
+
+```
+
+
+## Your Turn 5
+
+To take advantage of writing functions for tidyverse code, you will need to load **rlang** package to write functions in tidyverse format. So, in the code chunk below:
+
+- Load the package **rlang**.
+
+- One trick to write a function is to first write the code for an actual variable, and then replace that variable name with a function argument. I will write a function below to calculate the sum of a variable grouped by treatment and depth. Later you will modify it to calculate mean of a given variable by grouped by treatment and depth.
+
+```{r}
+# Load **rlang**
+library(rlang)
+
+# test what you want to do on an actual variable
+soil %>% 
+  group_by(treatment, depth) %>% 
+  summarise(mean_ca = mean(ca, na.rm = TRUE))
+
+# the above code worked, it gave sum for each combination
+# of treatment and depth
+# Now, I would like to put it in a function
+
+calculate_sum <- function(){
+  # function code goes here
+}
+
+# copy the code from line 99 to 101 and paste it in the 
+# function skeleton below, and replace `ca` with
+# `variable`
+
+calculate_sum <- function(variable){
+  soil %>% 
+  group_by(treatment, depth) %>% 
+  summarise(sum_variable = sum(variable, na.rm = TRUE))
+}
+
+calculate_sum(ca)
+
+# you will encounter the following error
+# Error: object 'ca' not found
+
+# Let's fix it: put `variable` inside double curly brackets
+
+calculate_sum <- function(variable){
+  soil %>%
+  group_by(treatment, depth) %>%
+  summarise("mean_{{variable}}" := mean({{variable}}, na.rm = TRUE))
+}
+
+calculate_sum(ca)
+
+# you can also provide the variable name by naming the argument
+calculate_sum(variable = toc_g_kg)
+```
+
+In the chunk below, modify the the `calculate_sum()` function written in the above chunk to create `calculate_mean()`.
+
+```{r}
+
+```
+
+
+
